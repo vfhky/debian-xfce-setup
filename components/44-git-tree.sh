@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# component: git-tree — Git-Tree（官方直链；URL 留空则跳过）
+# component: git-tree — Git-Tree（开源，优先 GitHub 最新 .deb）
 set -uo pipefail
-ID=git-tree; TYPE=url; ORDER=44; DESC="Git-Tree"
+ID=git-tree; TYPE=github; ORDER=44; DESC="Git-Tree（GitHub 最新）"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/common.sh"
 body(){
   have git-tree && { skip "git-tree 已装"; return 0; }
-  local URL="${GIT_TREE_URL:-https://github.com/git-tree-app/gittree/releases/download/v3.1.0/Git-Tree_3.1.0_amd64.deb}"
-  [ -z "${URL//[[:space:]]/}" ] && { skip "未配置 GIT_TREE_URL，从备份恢复"; return 0; }
-  install_deb "git-tree.deb" "$URL"
+  gh_latest_deb git-tree-app/gittree 'Git-Tree.*amd64\.deb'
 }
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then component_main; fi

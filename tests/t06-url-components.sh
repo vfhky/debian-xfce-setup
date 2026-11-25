@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Task 6 test: url components — real default URLs wired (download path); override works;
+# Task 6 test: url components (proprietary/internal) — real default URLs wired; override works;
 # only the no-public-URL one (nyaterm) skips. Fake `dpkg` so have-gate never masks URL logic.
+# (Open-source apps moved to github type in t05; only wechat/qq/nyaterm remain url.)
 set -uo pipefail
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO="$(cd "$HERE/.." && pwd)"; cd "$REPO"
@@ -14,11 +15,8 @@ fakebin=$(mktemp -d); printf '#!/bin/sh\nexit 1\n' > "$fakebin/dpkg"; chmod +x "
 rows="
 40-wechat|dldir1v6.qq.com
 41-qq|qqdl.gtimg.cn
-42-windinput|dl.windinput.com
-44-git-tree|github.com
-45-notegen|github.com
 "
-for c in 40-wechat 41-qq 42-windinput 43-nyaterm 44-git-tree 45-notegen; do bash -n "components/$c.sh"; asrt "$c syntax" $?; done
+for c in 40-wechat 41-qq 43-nyaterm; do bash -n "components/$c.sh"; asrt "$c syntax" $?; done
 
 while IFS='|' read -r c host; do
   [ -z "$c" ] && continue
@@ -32,11 +30,11 @@ done <<< "$rows"
 out=$(PATH="$fakebin:$PATH" WECHAT_URL=https://e/x.deb DRY_RUN=1 bash components/40-wechat.sh 2>&1)
 has "$out" "x.deb"; asrt "override WECHAT_URL honored" $?
 
-# nyaterm: no public url -> skip (unset and empty both skip)
+# nyaterm: no public url -> skip
 out=$(PATH="$fakebin:$PATH" DRY_RUN=1 bash components/43-nyaterm.sh 2>&1)
 has "$out" "⊘"; asrt "nyaterm (no url)->skip" $?
 
 out=$(bash init.sh --list 2>&1)
-for id in wechat qq windinput nyaterm git-tree notegen; do has "$out" "$id"; asrt "list shows $id" $?; done
+for id in wechat qq nyaterm; do has "$out" "$id"; asrt "list shows $id" $?; done
 rm -rf "$fakebin"
 exit "$fail"
