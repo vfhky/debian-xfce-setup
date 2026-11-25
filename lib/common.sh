@@ -27,6 +27,54 @@ run(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] %s\n' "$*"; else eval "$@";
 as_user(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run][user %s] %s\n' "$REAL_USER" "$*"; else sudo -u "$REAL_USER" -H bash -lc "$*"; fi; }
 have(){ dpkg -s "$1" >/dev/null 2>&1; }
 
+# ---- 安装器（失败一律返回非零）----
+# install_deb <out-name> <url>：PKG_DIR 本地优先，否则下载后 apt install
+install_deb(){
+  local out="$1" url="$2" lp=""
+  if [ -n "${PKG_DIR:-}" ]; then
+    if   [ -f "$PKG_DIR/$out" ]; then lp="$PKG_DIR/$out"
+    elif [ -f "$PKG_DIR/$(basename "$url")" ]; then lp="$PKG_DIR/$(basename "$url")"; fi
+  fi
+  if [ -n "$lp" ]; then
+    if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] apt install -y %s\n' "$lp"; return 0; fi
+    apt install -y "$lp"; return $?
+  fi
+  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] wget -q -O %s %s && apt install -y %s\n' "$out" "$url" "$out"; return 0; fi
+  local d f; d=$(mktemp -d); f="$d/$out"
+  if wget -q -O "$f" "$url"; then apt install -y "$f"; local rc=$?; rm -rf "$d"; return $rc
+  else warn "下载失败：$url"; rm -rf "$d"; return 1; fi
+}
+# gh_latest_deb <owner/repo> <regex>：github.com releases/latest + expanded_assets（避开 api 限流）
+gh_latest_deb(){
+  local repo="$1" pat="$2" tag page url
+  tag=$(curl -sSI "https://github.com/$repo/releases/latest" 2>/dev/null | tr -d '\r' | awk -F/ '/^location:/{print $NF}' | tail -1)
+  if [ -n "$tag" ]; then
+    page=$(curl -sSL "https://github.com/$repo/releases/expanded_assets/$tag" 2>/dev/null)
+    url=$(printf '%s' "$page" | grep -oE "/$repo/releases/download/[^\"]+\.deb" | grep -iE "$pat" | head -1)
+    url="${url:+https://github.com$url}"
+  fi
+  if [ -z "$url" ]; then warn "GitHub 未匹配到 .deb：$repo — https://github.com/$repo/releases/latest"; return 1; fi
+  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] 取 GitHub 最新 %s 的 .deb: %s\n' "$repo" "$url"; return 0; fi
+  install_deb "$(basename "$url")" "$url"
+}
+apt_install(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] apt install -y %s\n' "$*"; return 0; fi; apt install -y "$@"; }
+# add_apt_repo_dearmor <name> <keyring-url> <list-line>：下载 key 去 armor + 写 list（Chrome/Sublime）
+add_apt_repo_dearmor(){
+  local name="$1" keyurl="$2" line="$3" keyring="/usr/share/keyrings/$name.gpg"
+  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] add-apt-repo %s (dearmor key %s)\n' "$name" "$keyurl"; return 0; fi
+  wget -qO- "$keyurl" | gpg --dearmor -o "$keyring" || return 1
+  printf '%s\n' "$line" > "/etc/apt/sources.list.d/$name.list" || return 1
+  apt-get update || return 1
+}
+# add_apt_repo_prebuilt <name> <keyring-url> <list-url>：下载现成 key+list（Tailscale）
+add_apt_repo_prebuilt(){
+  local name="$1" keyurl="$2" listurl="$3" keyring="/usr/share/keyrings/$name.gpg"
+  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] add-apt-repo %s (prebuilt key+list)\n' "$name"; return 0; fi
+  curl -fsSL "$keyurl" -o "$keyring" || return 1
+  curl -fsSL "$listurl" -o "/etc/apt/sources.list.d/$name.list" || return 1
+  apt-get update || return 1
+}
+
 # component_main — 读 ID/TYPE/ORDER/DESC，在当前 shell 跑 body（保留 skip 状态），
 # 输出经日志文件回放，末尾打印 __RESULT__|<id>|<ok|skip|fail>|<ms>；fail 退出 1，余 0。
 component_main(){
