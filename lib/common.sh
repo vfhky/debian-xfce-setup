@@ -4,8 +4,8 @@
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-COMPONENTS_DIR="$REPO_ROOT/components"
-LOG_DIR="$REPO_ROOT/logs"
+COMPONENTS_DIR="${COMPONENTS_DIR:-$REPO_ROOT/components}"
+LOG_DIR="${LOG_DIR:-$REPO_ROOT/logs}"
 
 : "${DRY_RUN:=0}"; : "${STRICT:=0}"
 for _a in "$@"; do case "$_a" in --dry-run) DRY_RUN=1;; --strict) STRICT=1;; esac; done
