@@ -21,8 +21,8 @@ assert_contains "$out" "$pd/x.deb" "local-first uses local path"
 assert_not_contains "$out" "wget" "local-first skips wget"
 rm -rf "$pd"; PKG_DIR=""
 
-# (3) gh no-match returns non-zero
-out=$(DRY_RUN=1 gh_latest_deb nonexistent-owner-xyz/nope 'x\.deb' 2>&1); rc=$?
+# (3) gh no-match returns non-zero (real mode: nonexistent repo -> no match, no install)
+out=$(gh_latest_deb nonexistent-owner-xyz/nope 'x\.deb' 2>&1); rc=$?
 assert_rc "$rc" 1 "gh no-match returns non-zero"
 
 exit "$fail"

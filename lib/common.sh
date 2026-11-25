@@ -26,6 +26,14 @@ skip(){ RESULT_STATE=skip; printf '⊘ %s\n' "$*" >&2; return 0; }
 run(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] %s\n' "$*"; else eval "$@"; fi; }
 as_user(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run][user %s] %s\n' "$REAL_USER" "$*"; else sudo -u "$REAL_USER" -H bash -lc "$*"; fi; }
 have(){ dpkg -s "$1" >/dev/null 2>&1; }
+# profile_ids <file> — 每行一个组件 id（# 注释）；兼容末行无换行
+profile_ids(){
+  local ln
+  while IFS= read -r ln || [ -n "$ln" ]; do
+    ln="${ln%%#*}"; ln="${ln//[[:space:]]/}"
+    [ -n "$ln" ] && printf '%s\n' "$ln"
+  done < "$1"
+}
 
 # ---- 安装器（失败一律返回非零）----
 # install_deb <out-name> <url>：PKG_DIR 本地优先，否则下载后 apt install

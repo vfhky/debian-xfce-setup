@@ -24,6 +24,12 @@ asrt "profile desktop exit 0" $([ "$rc" = 0 ]; echo $?)
 has "$out" "__RESULT__|chrome|"; asrt "profile ran chrome" $?
 hasnt "$out" "__RESULT__|wechat|"; asrt "profile skipped wechat" $?
 
+# profile last entry must not be dropped (no trailing newline in .conf)
+out=$(bash init.sh --profile minimal --dry-run 2>&1)
+has "$out" "__RESULT__|nvidia|"; asrt "minimal includes last id (nvidia)" $?
+out=$(bash init.sh --profile desktop --dry-run 2>&1)
+has "$out" "__RESULT__|input-method|"; asrt "desktop includes last id (input-method)" $?
+
 # shim parity: init-system.sh == init.sh (compare id|state, ignore ms)
 a=$(bash init-system.sh --dry-run 2>&1 | grep -E '^__RESULT__\|' | cut -d'|' -f2,3 | sort)
 b=$(bash init.sh       --dry-run 2>&1 | grep -E '^__RESULT__\|' | cut -d'|' -f2,3 | sort)

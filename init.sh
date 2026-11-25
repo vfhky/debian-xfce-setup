@@ -41,7 +41,7 @@ if [ "$DRY_RUN" != 1 ]; then [ "${EUID:-$(id -u)}" -eq 0 ] || die "请用 sudo �
 run_files=(); unknown=()
 if [ -n "$PROFILE" ]; then
   pf="$HERE/profiles/$PROFILE.conf"; [ -f "$pf" ] || die "profile 不存在：$pf"
-  sel=(); while IFS= read -r ln; do ln="${ln%%#*}"; ln="${ln//[[:space:]]/}"; [ -n "$ln" ] && sel+=("$ln"); done < "$pf"
+  mapfile -t sel < <(profile_ids "$pf")
   for id in "${sel[@]}"; do [ -n "${BYID[$id]:-}" ] && run_files+=("${BYID[$id]}") || unknown+=("$id"); done
 elif [ ${#IDS[@]} -gt 0 ]; then
   for id in "${IDS[@]}"; do [ -n "${BYID[$id]:-}" ] && run_files+=("${BYID[$id]}") || unknown+=("$id"); done
