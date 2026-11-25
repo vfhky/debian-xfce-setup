@@ -21,7 +21,9 @@ apt install git gh curl wget vim ripgrep \
             bluetooth bluez blueman libspa-0.2-bluetooth
 ```
 
-## C. 本地 .deb 包安装（重装前需先备好 .deb；多数装入 /opt）
+## C. 本地 .deb 包安装（多数装入 /opt）
+
+> 重装时用 `init-system.sh` 可**自动联网下载安装**：Chrome/Sublime/Tailscale 走官方 apt 源；Obsidian/RustDesk/Clash Verge 自动取 GitHub 最新 `.deb`；NyaTerm/微信/QQ/问剑/Git-Tree 等在脚本 `DEB_URL` 填一次直链即自动装。下表保留版本与来源备查，也可手动 `apt install ./xxx.deb`。
 
 | 软件 | 当前版本 | 安装路径 | .deb 来源 |
 |---|---|---|---|
@@ -69,8 +71,7 @@ apt install git gh curl wget vim ripgrep \
 
 ## 重装建议顺序
 
-1. 装系统（XFCE + 中文）→ 2. `init-nvidia-driver.sh`（GPU 驱动）→ 3. 加第三方源装 Chrome/Tailscale →
-4. B 组 apt 常用包 → 5. sdkm 装 Node/Go → 6. uv / claude → 7. C 组本地 .deb 应用 →
-8. 输入法（fcitx5 + WindInput）→ 9. 恢复数据与配置。
+1. 装系统（XFCE + 中文）→ 2. `init-nvidia-driver.sh`（GPU 驱动）→ 3. `init-system.sh` 一键跑完（第三方源 + B 组 apt + 自动下载 C 组应用 + uv/claude）→
+4.（可选）在 `DEB_URL` 补内部应用直链后重跑 → 5. sdkm 装 Node/Go → 6. 输入法（fcitx5 + WindInput）→ 7. 恢复数据与配置。
 
-> ⚠️ C 组 .deb 多在 `~/桌面` 与 Ventoy U 盘 `/soft`，**重装前务必先备份到 U 盘/外置盘**（`/data`、`~` 非独立分区会被清空）。
+> ⚠️ 自动下载需联网；无公开源的应用（NyaTerm/微信/QQ/问剑 等）仍建议在 `~/桌面`、Ventoy U 盘 `/soft` 留底 `.deb`（`/data`、`~` 非独立分区会被清空），重装后从备份恢复或在 `DEB_URL` 填直链。
