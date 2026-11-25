@@ -8,7 +8,19 @@ Debian 13 (trixie) + XFCE 桌面重装后的一键初始化脚本集合。
 
 | 脚本 | 作用 | 用法 |
 |---|---|---|
-| `init-nvidia-driver.sh` | 把显示驱动从开源 `nouveau` 切换到闭源 `nvidia-driver`，解锁 CUDA / NVENC / NVDEC（AI 创作、本地 AI、视频硬编）。幂等、自动备份 apt 源。 | `sudo bash init-nvidia-driver.sh` |
+| `init-system.sh` | **总入口**：按 `SOFTWARE.md` 一键初始化（第三方源 + 常用 apt 包 + 离线 .deb 应用 + uv/claude + 调 GPU 驱动）。幂等、支持 `--dry-run`。 | `sudo bash init-system.sh` |
+| `init-nvidia-driver.sh` | 把显示驱动从开源 `nouveau` 切换到闭源 `nvidia-driver`，解锁 CUDA / NVENC / NVDEC。幂等、自动备份 apt 源。（由 init-system.sh 自动调用，也可单独跑） | `sudo bash init-nvidia-driver.sh` |
+
+`SOFTWARE.md`：手工安装软件清单（按安装方式分类，附路径与安装包来源）。
+
+### init-system.sh 的离线包目录
+
+C 组应用（NyaTerm / Obsidian / Orca / Sublime / RustDesk / 微信 / QQ / Clash / WindInput 等）以本地 `.deb` 安装。重装前把这些 `.deb` 备份到一个目录（默认 `~/reinstall-pkgs`，可用 `PKG_DIR=/路径` 覆盖），脚本会自动 `apt install` 它们；缺目录时只跳过该组、不影响其余步骤。
+
+```bash
+sudo bash init-system.sh --dry-run     # 先预览将执行的命令
+sudo bash init-system.sh               # 正式执行
+```
 
 ## init-nvidia-driver.sh 说明
 
