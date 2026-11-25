@@ -47,6 +47,7 @@ install_deb(){
 # gh_latest_deb <owner/repo> <regex>：github.com releases/latest + expanded_assets（避开 api 限流）
 gh_latest_deb(){
   local repo="$1" pat="$2" tag page url
+  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] 取 GitHub 最新 %s 的 .deb (%s)\n' "$repo" "$pat"; return 0; fi
   tag=$(curl -sSI "https://github.com/$repo/releases/latest" 2>/dev/null | tr -d '\r' | awk -F/ '/^location:/{print $NF}' | tail -1)
   if [ -n "$tag" ]; then
     page=$(curl -sSL "https://github.com/$repo/releases/expanded_assets/$tag" 2>/dev/null)
@@ -54,7 +55,6 @@ gh_latest_deb(){
     url="${url:+https://github.com$url}"
   fi
   if [ -z "$url" ]; then warn "GitHub 未匹配到 .deb：$repo — https://github.com/$repo/releases/latest"; return 1; fi
-  if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] 取 GitHub 最新 %s 的 .deb: %s\n' "$repo" "$url"; return 0; fi
   install_deb "$(basename "$url")" "$url"
 }
 apt_install(){ if [ "$DRY_RUN" = 1 ]; then printf '[dry-run] apt install -y %s\n' "$*"; return 0; fi; apt install -y "$@"; }

@@ -23,7 +23,7 @@ apt install git gh curl wget vim ripgrep \
 
 ## C. 本地 .deb 包安装（多数装入 /opt）
 
-> 重装时用 `init-system.sh` 可**自动联网下载安装**：Chrome/Sublime/Tailscale 走官方 apt 源；Obsidian/RustDesk/Clash Verge 自动取 GitHub 最新 `.deb`；NyaTerm/微信/QQ/问剑/Git-Tree 等在脚本 `DEB_URL` 填一次直链即自动装。下表保留版本与来源备查，也可手动 `apt install ./xxx.deb`。
+> 重装时用 `init.sh`（组件化）可**自动联网下载安装**：Chrome/Sublime/Tailscale 走官方 apt 源（`20/21/22` 组件）；Obsidian/RustDesk/Clash Verge 自动取 GitHub 最新（`30/31/32`）；NyaTerm/微信/QQ/问剑/Git-Tree 在对应 `4x` 组件顶部填一次 URL 即自动装。下表保留版本与来源备查，也可手动 `apt install ./xxx.deb`。详见 `README.md`。
 
 | 软件 | 当前版本 | 安装路径 | .deb 来源 |
 |---|---|---|---|

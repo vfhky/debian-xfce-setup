@@ -1,67 +1,60 @@
 # debian-xfce-setup
 
-Debian 13 (trixie) + XFCE 桌面重装后的一键初始化脚本集合。
+Debian 13 (trixie) + XFCE 桌面重装后的一键初始化脚本集合（组件化架构）。
 
-每台机器重装系统后，按顺序跑对应脚本即可快速恢复到可用状态。
+每个软件 = 一个可独立运行的组件；`init.sh` 负责发现 / 选择 / 隔离执行 / 汇总。增删软件不碰主脚本，可自由组合，单组件可单独排查。
 
-## 脚本
+## 结构
 
-| 脚本 | 作用 | 用法 |
-|---|---|---|
-| `init-system.sh` | **总入口**：按 `SOFTWARE.md` 一键初始化（第三方源 + 常用 apt 包 + 联网自动下载应用 + uv/claude + 调 GPU 驱动）。幂等、支持 `--dry-run`。 | `sudo bash init-system.sh` |
-| `init-nvidia-driver.sh` | 把显示驱动从开源 `nouveau` 切换到闭源 `nvidia-driver`，解锁 CUDA / NVENC / NVDEC。幂等、自动备份 apt 源。（由 init-system.sh 自动调用，也可单独跑） | `sudo bash init-nvidia-driver.sh` |
+| 路径 | 作用 |
+|---|---|
+| `init.sh` | **编排器**：发现 `components/*.sh`，按序隔离执行，三态（✓/✗/⊘）汇总。 |
+| `lib/common.sh` | 共享库：日志 / dry-run / 安装器（`install_deb` 本地优先、`gh_latest_deb`、apt 仓库助手）+ 组件契约 `component_main`。 |
+| `components/NN-name.sh` | 每个软件一个组件（`NN-` 定序，`name` 即选择 id）。 |
+| `profiles/*.conf` | 组件组合清单（`desktop` / `minimal`）。 |
+| `init-nvidia-driver.sh` | 闭源 NVIDIA 驱动安装（由 `50-nvidia` 组件调用，也可单独跑）。 |
+| `init-system.sh` | 向后兼容 shim，转发到 `init.sh`。 |
 
-`SOFTWARE.md`：手工安装软件清单（按安装方式分类，附路径与安装包来源）。
-
-### init-system.sh 的应用安装来源（无需预备 .deb）
-
-脚本联网自动获取应用，按来源分三类：
-
-1. **官方 apt 仓库**：Chrome / Sublime Text / Tailscale —— 自动加源后 `apt install`。
-2. **GitHub 最新 release**：Obsidian / RustDesk / Clash Verge —— 自动取各自最新 `.deb` 安装（走 `github.com`，避开 `api.github.com` 的 60 次/时限流）。
-3. **官方直链**：脚本顶部 `DEB_URL` 表里给 NyaTerm / 微信 / QQ / 问剑 / Git-Tree 等留了空位——**填一次完整 `.deb` 直链即自动下载安装**，留空则跳过并提示从备份恢复（这些多为内部/无稳定公开源，脚本不臆造 URL）。
-
-可选离线：若 `PKG_DIR`（默认 `~/reinstall-pkgs`，可 `PKG_DIR=/路径` 覆盖）里放了对应 `.deb`，则优先用本地、不下载。
+## 用法
 
 ```bash
-sudo bash init-system.sh --dry-run     # 先预览将执行的命令（不改动系统）
-sudo bash init-system.sh               # 正式执行
+sudo bash init.sh --list                     # 列出所有组件（id / 类型 / 说明）
+sudo bash init.sh --dry-run                  # 预演全部（不联网、不改动）
+sudo bash init.sh                            # 按文件名顺序跑全部
+sudo bash init.sh chrome obsidian nvidia     # 只跑指定组件（自由组合，按给出顺序）
+sudo bash init.sh --profile desktop          # 跑 profile 里列的组件
+bash components/30-obsidian.sh --dry-run     # 单独跑/调试某个组件
 ```
+
+失败语义：尽力而为跑完，单个组件失败只标 ✗、不中断其余；末尾汇总 `✓/✗/⊘`，只要有 ✗ 则 `init.sh` 退出非零（`--strict` 遇 ✗ 即停）。每组件日志在 `logs/<id>.log`。
+
+## 组件来源类型
+
+- `apt` / `apt_repo`：官方 Debian 源或第三方 apt 仓库（Chrome / Sublime / Tailscale，自包含加源 + update + 装）。
+- `github`：自动取 GitHub 最新 `.deb`（Obsidian / RustDesk / Clash Verge，走 `github.com` 避开 api 限流）。
+- `url`：官方直链；组件顶部 `URL="${XXX_URL:-}"` 填一次即自动下载，留空则 ⊘ 跳过（微信 / QQ / 问剑 / NyaTerm / Git-Tree 等内部/无稳定公开源，**不臆造 URL**）。
+- `script`：自定义逻辑（nvidia 包装 / uv-claude / sdkm / 输入法 / Telegram 备份恢复）。
+
+可选离线：把 `.deb` 放进 `PKG_DIR`（默认 `~/reinstall-pkgs`），`install_deb` 本地优先、不下载。
+
+## 新增一个软件
+
+在 `components/` 丢一个 `NN-<name>.sh`（照抄任一现有组件的 `ID/TYPE/ORDER/DESC` + `body()` + 守卫结构），`init.sh` 自动发现，无需改主脚本。
 
 ## init-nvidia-driver.sh 说明
 
-**背景**：nouveau 在较新的 NVIDIA 显卡（如 Ada / RTX 40 系）上不稳定，X server 容易在 Mesa glamor 路径段错误，导致整个桌面崩溃、被踢回登录界面；且 nouveau 不支持 CUDA。闭源驱动可同时解决稳定性与算力问题。
+**背景**：nouveau 在较新的 NVIDIA 显卡（如 Ada / RTX 40 系）上不稳定，X server 容易在 Mesa glamor 路径段错误，导致桌面崩溃、被踢回登录界面；且 nouveau 不支持 CUDA。闭源驱动同时解决稳定性与算力。
 
-**脚本做的事**：
-1. 检测 Secure Boot（开启则提示 MOK 注册）
-2. 给 apt 源补 `contrib non-free`（自动备份，兼容 `sources.list` 与 deb822 两种格式）
-3. `apt-get update`
-4. 安装当前内核头 `linux-headers-$(uname -r)`（DKMS 编译必需）
-5. 安装 `nvidia-driver`（DKMS 自动编译内核模块）
-6. `update-initramfs` + 安装后校验
+**脚本做的事**：检测 Secure Boot → 给 apt 源补 `contrib non-free`（自动备份，兼容两种格式）→ `apt-get update` → 装 `linux-headers-$(uname -r)` → 装 `nvidia-driver`（DKMS 编译）→ `update-initramfs` + 校验。
 
-**用法**：
 ```bash
-# 先预演，确认不会拆桌面（只模拟，不装）
-sudo bash init-nvidia-driver.sh --dry-run
-
-# 正式安装
-sudo bash init-nvidia-driver.sh
-
-# 重启生效
-sudo reboot
+sudo bash init-nvidia-driver.sh --dry-run   # 预演
+sudo bash init-nvidia-driver.sh             # 安装
+sudo reboot                                 # 重启生效
 ```
 
-**重启后验证**：
-```bash
-nvidia-smi                            # 显卡型号 + Driver 版本 + CUDA 版本
-lsmod | grep -E '^nvidia|^nouveau'    # 有 nvidia、无 nouveau
-lspci -nnk | grep -A3 -i 'vga\|3d'    # N 卡 "Kernel driver in use: nvidia"
-```
+重启后验证：`nvidia-smi` / `lsmod | grep -E '^nvidia|^nouveau'` / `lspci -nnk | grep -A3 -i 'vga\|3d'`。
 
-**回退**（若重启后进不了桌面）：`Ctrl+Alt+F3` →
-```bash
-sudo apt purge 'nvidia*' && sudo apt install --reinstall nvidia-driver
-```
+**回退**（重启后进不了桌面）：`Ctrl+Alt+F3` → `sudo apt purge 'nvidia*' && sudo apt install --reinstall nvidia-driver`。
 
-> 提示：内核更新后若 X 崩溃复发，先查 `dkms status`，确认 `nvidia-current` 对当前内核为 `installed`（DKMS 重编失败会静默回退到 nouveau）。
+> 内核更新后若 X 崩溃复发，先查 `dkms status`，确认 `nvidia-current` 对当前内核为 `installed`。
