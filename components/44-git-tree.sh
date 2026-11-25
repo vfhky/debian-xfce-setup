@@ -5,7 +5,7 @@ ID=git-tree; TYPE=url; ORDER=44; DESC="Git-Tree"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/common.sh"
 body(){
   have git-tree && { skip "git-tree 已装"; return 0; }
-  local URL="${GIT_TREE_URL:-}"
+  local URL="${GIT_TREE_URL:-https://github.com/git-tree-app/gittree/releases/download/v3.1.0/Git-Tree_3.1.0_amd64.deb}"
   [ -z "${URL//[[:space:]]/}" ] && { skip "未配置 GIT_TREE_URL，从备份恢复"; return 0; }
   install_deb "git-tree.deb" "$URL"
 }

@@ -5,7 +5,7 @@ ID=wechat; TYPE=url; ORDER=40; DESC="微信 WeChat"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/common.sh"
 body(){
   have wechat && { skip "wechat 已装"; return 0; }
-  local URL="${WECHAT_URL:-}"
+  local URL="${WECHAT_URL:-https://dldir1v6.qq.com/weixin/Universal/Linux/WeChatLinux_x86_64.deb}"
   [ -z "${URL//[[:space:]]/}" ] && { skip "未配置 WECHAT_URL，从备份恢复"; return 0; }
   install_deb "wechat.deb" "$URL"
 }

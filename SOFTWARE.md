@@ -23,7 +23,7 @@ apt install git gh curl wget vim ripgrep \
 
 ## C. 本地 .deb 包安装（多数装入 /opt）
 
-> 重装时用 `init.sh`（组件化）可**自动联网下载安装**：Chrome/Sublime/Tailscale 走官方 apt 源（`20/21/22` 组件）；Obsidian/RustDesk/Clash Verge 自动取 GitHub 最新（`30/31/32`）；NyaTerm/微信/QQ/问剑/Git-Tree 在对应 `4x` 组件顶部填一次 URL 即自动装。下表保留版本与来源备查，也可手动 `apt install ./xxx.deb`。详见 `README.md`。
+> 重装时用 `init.sh`（组件化）可**自动联网下载安装**：Chrome/Sublime/Tailscale 走官方 apt 源（`20/21/22`）；Obsidian/RustDesk/Clash Verge 自动取 GitHub 最新（`30/31/32`）；微信/QQ/清风输入法/Git-Tree/NoteGen 已在对应 `4x` 组件内置**真实官方直链**（可同名 `*_URL` 环境变量覆盖）；NyaTerm 为内部工具无公开源（⊘，从备份恢复）。下表保留版本与来源备查。详见 `README.md`。
 
 | 软件 | 当前版本 | 安装路径 | .deb 来源 |
 |---|---|---|---|
@@ -35,7 +35,7 @@ apt install git gh curl wget vim ripgrep \
 | WeChat 微信 | 4.1.13.26 | /opt/wechat | Ventoy/soft/WeChatLinux_x86_64.deb |
 | QQ (linuxqq) | 3.2.34 | /opt/QQ | Ventoy/soft/QQ_3.2.34_*_amd64.deb |
 | Clash Verge | 2.5.10 | (系统) | Ventoy/soft/Clash.Verge_2.5.10_amd64.deb |
-| WindInput 问剑输入法 | 0.125.0 | (系统) | Ventoy/soft/WindInput-0.125.0-linux-amd64.deb |
+| WindInput 清风输入法 | 0.133.0 | (系统) | 官方 dl.windinput.com（组件已内置直链） |
 | MisterDownloadManager | 0.5.2 | /usr/bin/misterdownloadmanager | ~/桌面/MisterDownloadManager-0.5.2-linux-x86_64.deb |
 | Git-Tree | 3.0.6 | (系统) | ~/桌面/Git-Tree_3.0.6_amd64.deb |
 | Google Chrome | 155 | /opt/google | 见 A（有 apt 仓库，优先用仓库） |
