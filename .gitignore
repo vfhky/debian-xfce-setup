@@ -1,2 +1,19 @@
+# 运行产物 / 本地状态
 logs/
 .superpowers/
+
+# IDE / 编辑器（个人状态，不入库）
+.openidea/
+.idea/
+*.iml
+.vscode/
+.vs/
+.fleet/
+.cursor/
+.aider*
+
+# 编辑器临时 / 交换文件
+*.swp
+*.swo
+*~
+.DS_Store
