@@ -1,12 +1,10 @@
 #!/usr/bin/env bash
-# component: nyaterm — NyaTerm（官方/内部直链；URL 留空则跳过，本地优先）
+# component: nyaterm — NyaTerm（开源，优先 GitHub 最新 .deb）
 set -uo pipefail
-ID=nyaterm; TYPE=url; ORDER=43; DESC="NyaTerm"
+ID=nyaterm; TYPE=github; ORDER=43; DESC="NyaTerm（GitHub 最新）"
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")/../lib" && pwd)/common.sh"
 body(){
   have nyaterm && { skip "nyaterm 已装"; return 0; }
-  local URL="${NYATERM_URL:-}"
-  [ -z "${URL//[[:space:]]/}" ] && { skip "未配置 NYATERM_URL，从备份恢复"; return 0; }
-  install_deb "nyaterm.deb" "$URL"
+  gh_latest_deb nyakang/nyaterm 'NyaTerm.*linux_x64\.deb'
 }
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then component_main; fi

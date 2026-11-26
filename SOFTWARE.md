@@ -23,11 +23,11 @@ apt install git gh curl wget vim ripgrep \
 
 ## C. 本地 .deb 包安装（多数装入 /opt）
 
-> 重装时用 `init.sh`（组件化）可**自动联网下载安装**：开源应用一律**优先从 GitHub 最新 .deb** 安装（清风输入法/Git-Tree/NoteGen/Obsidian/RustDesk/Clash，组件 `30/31/32/42/44/45`）；Chrome/Sublime/Tailscale 走官方 apt 源（`20/21/22`）；微信/QQ 为闭源、内置官方直链（`40/41`，可同名 `*_URL` 覆盖）；NyaTerm 内部工具无公开源（⊘，从备份恢复）。详见 `README.md`。
+> 重装时用 `init.sh`（组件化）可**自动联网下载安装**：开源应用一律**优先从 GitHub 最新 .deb** 安装（NyaTerm/清风输入法/Git-Tree/NoteGen/Obsidian/RustDesk/Clash，组件 `30/31/32/42/43/44/45`）；Chrome/Sublime/Tailscale 走官方 apt 源（`20/21/22`）；微信/QQ 为闭源、内置官方直链（`40/41`，可同名 `*_URL` 覆盖）。详见 `README.md`。
 
 | 软件 | 当前版本 | 安装路径 | .deb 来源 |
 |---|---|---|---|
-| NyaTerm | 2.0.8 | /opt/nyaterm | ~/桌面/NyaTerm_2.0.8_linux_x64.deb |
+| NyaTerm | 2.0.8 | /opt/nyaterm | GitHub nyakang/nyaterm（组件取最新 .deb） |
 | Obsidian | 1.15.0 | /opt/Obsidian | ~/桌面/obsidian_1.15.0_amd64.deb |
 | Orca (orca-ide) | 1.4.274 | /opt/Orca | orca-updater 自动更新；初始包 orca-ide_*.deb |
 | Sublime Text | 4215 | /opt/sublime_text | ~/桌面/sublime-text_build-4215_amd64.deb |
@@ -74,4 +74,4 @@ apt install git gh curl wget vim ripgrep \
 1. 装系统（XFCE + 中文）→ 2. `init-nvidia-driver.sh`（GPU 驱动）→ 3. `init-system.sh` 一键跑完（第三方源 + B 组 apt + 自动下载 C 组应用 + uv/claude）→
 4.（可选）在 `DEB_URL` 补内部应用直链后重跑 → 5. sdkm 装 Node/Go → 6. 输入法（fcitx5 + WindInput）→ 7. 恢复数据与配置。
 
-> ⚠️ 自动下载需联网；无公开源的应用（NyaTerm/微信/QQ/问剑 等）仍建议在 `~/桌面`、Ventoy U 盘 `/soft` 留底 `.deb`（`/data`、`~` 非独立分区会被清空），重装后从备份恢复或在 `DEB_URL` 填直链。
+> ⚠️ 自动下载需联网；**开源应用一律从 GitHub 取最新 .deb**；Chrome/Sublime/Tailscale 走官方 apt 源（GitHub 无官方 .deb）；仅微信/QQ 为闭源、无“最新”永久直链（URL 需手动 bump，可用 `WECHAT_URL`/`QQ_URL` 覆盖）。无网或闭源应用建议在 `~/桌面`、Ventoy U 盘 `/soft` 留底 `.deb`（`/data`、`~` 非独立分区会被清空），重装后从备份恢复。

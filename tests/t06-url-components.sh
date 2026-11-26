@@ -16,7 +16,7 @@ rows="
 40-wechat|dldir1v6.qq.com
 41-qq|qqdl.gtimg.cn
 "
-for c in 40-wechat 41-qq 43-nyaterm; do bash -n "components/$c.sh"; asrt "$c syntax" $?; done
+for c in 40-wechat 41-qq; do bash -n "components/$c.sh"; asrt "$c syntax" $?; done
 
 while IFS='|' read -r c host; do
   [ -z "$c" ] && continue
@@ -30,11 +30,7 @@ done <<< "$rows"
 out=$(PATH="$fakebin:$PATH" WECHAT_URL=https://e/x.deb DRY_RUN=1 bash components/40-wechat.sh 2>&1)
 has "$out" "x.deb"; asrt "override WECHAT_URL honored" $?
 
-# nyaterm: no public url -> skip
-out=$(PATH="$fakebin:$PATH" DRY_RUN=1 bash components/43-nyaterm.sh 2>&1)
-has "$out" "⊘"; asrt "nyaterm (no url)->skip" $?
-
 out=$(bash init.sh --list 2>&1)
-for id in wechat qq nyaterm; do has "$out" "$id"; asrt "list shows $id" $?; done
+for id in wechat qq; do has "$out" "$id"; asrt "list shows $id" $?; done
 rm -rf "$fakebin"
 exit "$fail"

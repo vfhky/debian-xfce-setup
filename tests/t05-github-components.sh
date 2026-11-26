@@ -8,7 +8,7 @@ asrt(){ if [ "$2" = 0 ]; then echo "ok: $1"; else echo "FAIL: $1"; fail=1; fi; }
 has(){ [[ "$1" == *"$2"* ]]; }
 
 fakebin=$(mktemp -d); printf '#!/bin/sh\nexit 1\n' > "$fakebin/dpkg"; chmod +x "$fakebin/dpkg"
-comps="30-obsidian 31-rustdesk 32-clash-verge 42-windinput 44-git-tree 45-notegen"
+comps="30-obsidian 31-rustdesk 32-clash-verge 42-windinput 43-nyaterm 44-git-tree 45-notegen"
 for c in $comps; do bash -n "components/$c.sh"; asrt "$c syntax" $?; done
 for c in $comps; do
   id="${c#*-}"; out=$(PATH="$fakebin:$PATH" DRY_RUN=1 bash "components/$c.sh" 2>&1); rc=$?
@@ -21,5 +21,5 @@ out=$(PATH="$fakebin:$PATH" DRY_RUN=1 bash components/42-windinput.sh 2>&1)
 hasnt(){ [[ "$1" != *"$2"* ]]; }; hasnt "$out" "dl.windinput.com"; asrt "windinput NOT from dl.windinput.com" $?
 rm -rf "$fakebin"
 out=$(bash init.sh --list 2>&1)
-for id in obsidian rustdesk clash-verge windinput git-tree notegen; do has "$out" "$id"; asrt "list shows $id" $?; done
+for id in obsidian rustdesk clash-verge windinput nyaterm git-tree notegen; do has "$out" "$id"; asrt "list shows $id" $?; done
 exit "$fail"
